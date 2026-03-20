@@ -7,10 +7,7 @@ function isAuthRoute() {
 }
 
 export function useTheme() {
-  const [dark, setDark] = useState(() => {
-    if (isAuthRoute()) return false;
-    return localStorage.getItem('theme') === 'dark';
-  });
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     if (isAuthRoute()) {
@@ -20,13 +17,7 @@ export function useTheme() {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
-  const toggle = () => {
-    setDark((prev) => {
-      const next = !prev;
-      localStorage.setItem('theme', next ? 'dark' : 'light');
-      return next;
-    });
-  };
+  const toggle = () => setDark((prev) => !prev);
 
   const forceLight = () => {
     document.documentElement.classList.remove('dark');

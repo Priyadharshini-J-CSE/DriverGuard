@@ -45,12 +45,7 @@ function ThemeGuard() {
   const { pathname } = useLocation();
   useEffect(() => {
     const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
-    if (isAuth) {
-      document.documentElement.classList.remove('dark');
-    } else {
-      const saved = localStorage.getItem('theme');
-      document.documentElement.classList.toggle('dark', saved === 'dark');
-    }
+    if (isAuth) document.documentElement.classList.remove('dark');
   }, [pathname]);
   return null;
 }

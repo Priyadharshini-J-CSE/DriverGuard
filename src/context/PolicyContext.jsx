@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { getCurrentToken } from '../services/authService';
 
 const PolicyContext = createContext(null);
 
@@ -12,12 +13,9 @@ export const PolicyProvider = ({ children }) => {
     if (fetched.current) return;
     fetched.current = true;
 
-    // Plans are public — always fetch
     api.get('/plans').then((r) => setPlans(r.data)).catch(() => {});
 
-    // Active policy requires auth
-    const token = localStorage.getItem('token');
-    if (token) {
+    if (getCurrentToken()) {
       api.get('/policy/active')
         .then((r) => { if (r.data) setPolicy(r.data); })
         .catch(() => {});

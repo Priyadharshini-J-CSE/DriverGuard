@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { getCurrentUser, getCurrentToken, setCurrentToken } from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -7,61 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getCurrentToken();
     if (token) {
-      const users = JSON.parse(localStorage.getItem('dg_users') || '[]');
-      const patched = users.map((u) => ({
-        ...u,
-        name: 'User',
-        city: 'Coimbatore',
-        deliveryPlatform: u.deliveryPlatform || 'Zomato',
-      }));
-      localStorage.setItem('dg_users', JSON.stringify(patched));
-      const current = patched.find((u) => u.token === token);
-      if (current) {
-        const { password: _, ...user } = current;
-        setUser(user);
-      } else {
-        localStorage.removeItem('token');
+      const u = getCurrentUser();
+      if (u) {
+        const { password: _, ...userData } = u;
+        setUser(userData);
       }
     }
     setLoading(false);
   }, []);
 
   const loginUser = (token, userData) => {
-    localStorage.setItem('token', token);
-    const cleaned = {
-      ...userData,
-      name: 'User',
-      city: 'Coimbatore',
-      deliveryPlatform: userData.deliveryPlatform || 'Zomato',
-    };
-    // Persist cleaned data back to dg_users
-    const users = JSON.parse(localStorage.getItem('dg_users') || '[]');
-    const idx = users.findIndex((u) => u.token === token);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...cleaned };
-      localStorage.setItem('dg_users', JSON.stringify(users));
-    }
-    setUser(cleaned);
+    setCurrentToken(token);
+    setUser(userData);
   };
 
   const updateUser = (userData) => {
-    setUser((prev) => {
-      const updated = { ...prev, ...userData };
-      // Sync back to localStorage store
-      const users = JSON.parse(localStorage.getItem('dg_users') || '[]');
-      const idx = users.findIndex((u) => u.token === localStorage.getItem('token'));
-      if (idx !== -1) {
-        users[idx] = { ...users[idx], ...userData };
-        localStorage.setItem('dg_users', JSON.stringify(users));
-      }
-      return updated;
-    });
+    setUser((prev) => ({ ...prev, ...userData }));
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    setCurrentToken(null);
     setUser(null);
   };
 
